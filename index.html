@@ -105,10 +105,11 @@ function startGame() {
 }
 
 function nextMole() {
-  if (currentSpot) {
-    document.getElementById("game-area").style.backgroundImage = "url('images/none.png')";
+  if (currentSpot && !moleClicked) {
     score--;
   }
+
+  moleClicked = false;
 
   const newSpot = spots[Math.floor(Math.random() * spots.length)];
   currentSpot = newSpot;
@@ -124,10 +125,11 @@ document.querySelectorAll('.hitbox').forEach(box => {
   box.addEventListener('click', () => {
     if (box.id === currentSpot) {
       score++;
+      moleClicked = true;
       document.getElementById("game-area").style.backgroundImage = "url('images/none.png')";
       currentSpot = null;
       clearTimeout(moleTimer);
-      setTimeout(nextMole, 400);
+      moleTimer = setTimeout(nextMole, 400);
     }
   });
 });
@@ -140,13 +142,19 @@ function endGame() {
 }
 
 function restart() {
+  clearInterval(timer);
+  clearTimeout(moleTimer);
+
   score = 0;
   timeLeft = 30;
   speed = 1000;
   currentSpot = null;
+  moleClicked = false;
+
   document.getElementById("popup").style.display = "none";
   document.getElementById("game-area").style.backgroundImage = "url('images/none.png')";
   document.getElementById("scoreboard").textContent = `Score: ${score} | Time: ${timeLeft}`;
+
   startGame();
 }
 
