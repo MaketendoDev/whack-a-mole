@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Whack a Mole</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: #891414;
+  }
+  #game-area {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 100vw;
+    height: 100vh;
+    transform: translate(-50%, -50%);
+    background-image: url('images/none.png');
+    background-size: cover;
+    background-position: center;
+  }
+
+  .hitbox {
+    position: absolute;
+    width: 15%;
+    height: 20%;
+    cursor: pointer;
+    transform: translate(-50%, -50%);
+    /* background: rgba(255, 0, 0, 0.3); */
+  }
+
+  #top_left     { top: 42%; left: 35%; }
+  #top_middle   { top: 42%; left: 50%; }
+  #top_right    { top: 42%; left: 65%; }
+  #bottom_left  { top: 56%; left: 30%; }
+  #bottom_middle{ top: 56%; left: 50%; }
+  #bottom_right { top: 56%; left: 70%; }
+
+  #scoreboard {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-family: sans-serif;
+    font-size: 2rem;
+    z-index: 10;
+  }
+
+  #popup {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    color: white;
+    font-family: sans-serif;
+    font-size: 2rem;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+
+  #popup button {
+    margin-top: 1rem;
+    padding: 0.5rem 1.5rem;
+    font-size: 1.2rem;
+  }
+</style>
+</head>
+<body>
+<div id="scoreboard">Score: 0 | Time: 30</div>
+<div id="game-area">
+  <div id="top_left" class="hitbox"></div>
+  <div id="top_middle" class="hitbox"></div>
+  <div id="top_right" class="hitbox"></div>
+  <div id="bottom_left" class="hitbox"></div>
+  <div id="bottom_middle" class="hitbox"></div>
+  <div id="bottom_right" class="hitbox"></div>
+</div>
+<div id="popup">
+  <div id="final-score"></div>
+  <button onclick="restart()">Restart</button>
+</div>
+
+<script>
+const spots = ["top_left","top_middle","top_right","bottom_left","bottom_middle","bottom_right"];
+let score = 0;
+let timeLeft = 30;
+let currentSpot = null;
+let speed = 1000;
+let timer, moleTimer;
+
+function startGame() {
+  timer = setInterval(() => {
+    timeLeft--;
+    document.getElementById("scoreboard").textContent = `Score: ${score} | Time: ${timeLeft}`;
+    if (timeLeft <= 0) endGame();
+  }, 1000);
+
+  nextMole();
+}
+
+function nextMole() {
+  if (currentSpot) {
+    document.getElementById("game-area").style.backgroundImage = "url('images/none.png')";
+    score--;
+  }
+
+  const newSpot = spots[Math.floor(Math.random() * spots.length)];
+  currentSpot = newSpot;
+
+  document.getElementById("game-area").style.backgroundImage = `url('images/${newSpot}.png')`;
+
+  speed = Math.max(600, speed - 20);
+  clearTimeout(moleTimer);
+  moleTimer = setTimeout(nextMole, speed);
+}
+
+document.querySelectorAll('.hitbox').forEach(box => {
+  box.addEventListener('click', () => {
+    if (box.id === currentSpot) {
+      score++;
+      document.getElementById("game-area").style.backgroundImage = "url('images/none.png')";
+      currentSpot = null;
+      clearTimeout(moleTimer);
+      setTimeout(nextMole, 400);
+    }
+  });
+});
+
+function endGame() {
+  clearInterval(timer);
+  clearTimeout(moleTimer);
+  document.getElementById("popup").style.display = "flex";
+  document.getElementById("final-score").textContent = `Time's up! Final Score: ${score}`;
+}
+
+function restart() {
+  score = 0;
+  timeLeft = 30;
+  speed = 1000;
+  currentSpot = null;
+  document.getElementById("popup").style.display = "none";
+  document.getElementById("game-area").style.backgroundImage = "url('images/none.png')";
+  document.getElementById("scoreboard").textContent = `Score: ${score} | Time: ${timeLeft}`;
+  startGame();
+}
+
+startGame();
+</script>
+</body>
+</html>
